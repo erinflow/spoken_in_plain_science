@@ -206,10 +206,21 @@
 
     const editor = document.getElementById('editor');
 
+    // Irregular plurals: plural form -> singular (mouse->mice, foot->feet, etc.)
+    const irregularPlurals = {
+      mice: 'mouse', lice: 'louse',                    // -ouse -> -ice
+      feet: 'foot', teeth: 'tooth', geese: 'goose',    // -oo- -> -ee-
+      men: 'man', women: 'woman',                      // -an -> -en
+      children: 'child', oxen: 'ox',                   // -en / -ren
+      people: 'person', dice: 'die'                    // other common irregulars
+    };
+
     function isAllowed(word) {
       if (allowedWords.has(word)) return true;
       // Check for irregular verbs
       if (typeof irregularVerbs !== 'undefined' && irregularVerbs[word] && allowedWords.has(irregularVerbs[word])) return true;
+      // Check for irregular plurals (e.g. mice->mouse, feet->foot)
+      if (irregularPlurals[word] && allowedWords.has(irregularPlurals[word])) return true;
       // General rule for 'en' and 'n' endings (e.g., eaten -> eat, taken -> take)
       if (word.endsWith('en') && allowedWords.has(word.slice(0, -2))) return true;
       if (word.endsWith('n') && allowedWords.has(word.slice(0, -1))) return true;
@@ -282,7 +293,10 @@
     }
 
     function updateEditorHighlight() {
-      const saved = saveCaretPosition(editor);
+      // Only save/restore caret when focus is in the editor, so typing in
+      // the "Add your own words" input doesn't steal focus
+      const hadFocus = (document.activeElement === editor);
+      const saved = hadFocus ? saveCaretPosition(editor) : null;
       const text = getPlainTextFromEditor();
       // Split and highlight words
       const html = text.replace(/\b([a-zA-Z']+)\b/g, (match, word) => {
@@ -293,7 +307,9 @@
         return match;
       }).replace(/\n/g, '<br>');
       editor.innerHTML = html;
-      restoreCaretPosition(editor, saved);
+      if (hadFocus && saved) {
+        restoreCaretPosition(editor, saved);
+      }
     }
 
     editor.addEventListener('input', updateEditorHighlight);

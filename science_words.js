@@ -1,5 +1,8 @@
 
 const scienceWordsList = `
+physics
+biology
+chemistry
 force
 energy
 mass
