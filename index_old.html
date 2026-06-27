@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spoken in Plain Science</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🪐</text></svg>">
+  <style>
+    #highlighted {
+      position: absolute;
+      top: 120px; /* Adjust as needed to match textarea position */
+      left: 0;
+      width: 100%;
+      height: 120px;
+      padding: 10px;
+      font-size: 1.1em;
+      font-family: inherit;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: inherit;
+      background: white;
+      pointer-events: none;
+      z-index: 1;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+    textarea {
+      position: absolute;
+      top: 120px; /* Adjust as needed to match highlighted div */
+      left: 0;
+      width: 100%;
+      height: 120px;
+      font-size: 1.1em;
+      font-family: inherit;
+      border: 1px solid #ccc;
+      background: transparent;
+      color: black;
+      z-index: 2;
+      box-sizing: border-box;
+      resize: none;
+    }
+    #editor .bad-word {
+      color: red !important;
+      font-weight: bold;
+      text-decoration: underline;
+      text-decoration-color: red !important;
+      background: none !important;
+    }
+    body {
+      position: relative;
+      min-height: 300px;
+      background: url('science_writer_bg.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+    h1 {
+      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
+    }
+    label {
+      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
+    }
+    .subheader {
+      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
+      font-size: 1.8em;
+      margin: 10px 0 5px 0;
+    }
+    .main-container {
+      background: rgba(255,255,255,0.9);
+      border-radius: 12px;
+      padding: 32px 24px 24px 24px;
+      max-width: 2000px;
+      width: 90%;
+      margin: 40px auto;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    }
+    #editor {
+      min-height: 120px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-size: 1.1em;
+      font-family: Consolas, 'Liberation Mono', 'Courier New', monospace;
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(255,255,255);
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+    .footer-bar {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100vw;
+      background: rgba(255,255,255,0.9);
+      color: #222;
+      text-align: center;
+      padding: 16px 0 12px 0;
+      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
+      font-size: 1em;
+      z-index: 100;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .user-words-container {
+      margin: 16px 0 8px 0;
+    }
+    .user-words-label {
+      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
+      font-size: 1em;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .user-words-input {
+      width: 100%;
+      padding: 8px;
+      font-size: 1em;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-family: Consolas, 'Liberation Mono', 'Courier New', monospace;
+    }
+    .about-container {
+      background: rgba(255,255,255,0.9);
+      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
+      padding: 28px 24px 20px 24px;
+      margin: 32px auto 24px auto;
+      max-width: 2000px;
+      width: 90%;
+      box-sizing: border-box;
+      font-size: 1.1em;
+      border-radius: 12px;
+    }
+    .red-text {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <h1>Spoken in Plain Science 🔬</h1>
+    <label><input type="checkbox" id="scienceToggle" checked> Check for scientific words?</label>
+    <div class="user-words-container">
+      <label for="userWords" class="user-words-label">Add your own field's common words here:</label>
+      <input type="text" id="userWords" placeholder="e.g. quasar, exoplanet, photometry, microscopy, etc." class="user-words-input">
+    </div>
+    <div class="subheader">Write words here. If a word turns <span class="red-text"><u>red</u></span>, it is not allowed!</div>
+    <div id="editor" contenteditable="true" spellcheck="true"></div>
+  </div>
+
+  <div class="about-container">
+    <h1>What is Spoken in Plain Science?</h1>
+    <p>
+        Spoken in Plain Science is a science communication tool modeled after the XKCD webtool <a href="https://xkcd.com/simplewriter/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">"Simple Writer"</a>, 
+        which is based on their webcomic <a href="https://xkcd.com/1133/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">"Up Goer Five"</a> 
+        and their book <a href="https://blog.xkcd.com/2015/05/13/new-book-thing-explainer/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">"Thing Explainer"</a>.
+        The instructions for the Simple Writer are simple: write in the box, and if you use a word that is not in the top 1000(-ish) words commonly used in the English language, that word will turn red. This is to help simplify
+        scientific messages for non-scientific audiences. Spoken in Plain Science was created in response to feedback from graduate students and postdoctoral researchers who 
+        participated in the <a href="https://cst.princeton.edu/lab-tales-science-storytelling-workshop" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">
+        Lab Tales Science Storytelling Workshop</a> who liked the Simple Writer activity, but wanted an exercise that would help them communicate at a slightly higher level 
+        (e.g. to peers in their field but not necessarily their sub-field).
+    </p>
+    <p> Spoken in Plain Science checks a list of the <a href="https://www.ef.edu/english-resources/english-vocabulary/top-3000-words/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">3000 most commonly-used words in the English language</a>, 
+        plus a list of approximately 300 words used commonly in physics, chemistry, biology, and computer science writings as suggested by ChatGPT. If you want to use just the 
+        3000 most commonly-used words, simply don't check the box next to ''Check for scientific words?'' We can't capture all of the words that might be common to a scientific 
+        field, so Spoken in Plain Science also allows you to add your own words to the checker.
+    </p>
+    <p> Good science requires good communication, now more than ever. We hope that Spoken in Plain Science will help you to better communicate your incredible research to friends, 
+        family, your scientific peers, and the general public!
+    </p>
+  </div>
+  <div class="footer-bar">
+    Created by Erin Flowers, PhD, Assistant Director of STEM Education, <a href="https://cst.princeton.edu/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">Center on Science and Technology</a>, Princeton University
+  </div>
+
+  <script src="common_words.js"></script>
+  <script src="science_words.js"></script>
+  <script>
+    // Parse and normalize the word lists to lowercase and trim
+    const commonWords = typeof commonWordsList === 'string'
+      ? commonWordsList.split('\n').map(w => w.trim().toLowerCase()).filter(Boolean)
+      : (typeof commonWords !== 'undefined' ? commonWords : []);
+
+    const scienceWords = typeof scienceWordsList === 'string'
+      ? scienceWordsList.split('\n').map(w => w.trim().toLowerCase()).filter(Boolean)
+      : (typeof scienceWords !== 'undefined' ? scienceWords : []);
+
+    // Function to get allowed words based on toggle
+    function getAllowedWords() {
+      const scienceChecked = document.getElementById('scienceToggle').checked;
+      const userWordsRaw = document.getElementById('userWords').value;
+      // Split user words by comma, space, or newline, trim, and lowercase
+      const userWords = userWordsRaw.split(/[,\s]+/).map(w => w.trim().toLowerCase()).filter(Boolean);
+      if (scienceChecked) {
+        return new Set([...commonWords, ...scienceWords, ...userWords]);
+      } else {
+        return new Set([...commonWords, ...userWords]);
+      }
+    }
+
+    let allowedWords = getAllowedWords();
+
+    // Debug output
+    console.log("Allowed words sample:", Array.from(allowedWords).slice(0, 10));
+    console.log("Allowed words count:", allowedWords.size);
+    if (allowedWords.size === 0) {
+      alert("No allowed words loaded! Please check your word list files.");
+    }
+
+    const editor = document.getElementById('editor');
+
+    // Irregular plurals: plural form -> singular (mouse->mice, foot->feet, etc.)
+    const irregularPlurals = {
+      mice: 'mouse', lice: 'louse',                    // -ouse -> -ice
+      feet: 'foot', teeth: 'tooth', geese: 'goose',    // -oo- -> -ee-
+      men: 'man', women: 'woman',                      // -an -> -en
+      children: 'child', oxen: 'ox',                   // -en / -ren
+      people: 'person', dice: 'die'                    // other common irregulars
+    };
+
+    function isAllowed(word) {
+      if (allowedWords.has(word)) return true;
+      // Check for irregular verbs
+      if (typeof irregularVerbs !== 'undefined' && irregularVerbs[word] && allowedWords.has(irregularVerbs[word])) return true;
+      // Check for irregular plurals (e.g. mice->mouse, feet->foot)
+      if (irregularPlurals[word] && allowedWords.has(irregularPlurals[word])) return true;
+      // General rule for 'en' and 'n' endings (e.g., eaten -> eat, taken -> take)
+      if (word.endsWith('en') && allowedWords.has(word.slice(0, -2))) return true;
+      if (word.endsWith('n') && allowedWords.has(word.slice(0, -1))) return true;
+      // Check for simple plurals
+      if (word.endsWith('es') && allowedWords.has(word.slice(0, -2))) return true;
+      if (word.endsWith('s') && allowedWords.has(word.slice(0, -1))) return true;
+      // Check for y -> ies plural (e.g., baby -> babies)
+      if (word.endsWith('ies') && allowedWords.has(word.slice(0, -3) + 'y')) return true;
+      // Check for comparative and superlative adjectives
+      if (word.endsWith('er') && allowedWords.has(word.slice(0, -2))) return true;
+      if (word.endsWith('est') && allowedWords.has(word.slice(0, -3))) return true;
+      // Check for past tense verbs
+      if (word.endsWith('d') && allowedWords.has(word.slice(0, -1))) return true;
+      if (word.endsWith('ed') && allowedWords.has(word.slice(0, -2))) return true;
+      // Check for adverbs (e.g., narrow -> narrowly)
+      if (word.endsWith('ly') && allowedWords.has(word.slice(0, -2))) return true;
+      // Check for y -> ily adverbs (e.g., happy -> happily)
+      if (word.endsWith('ily') && allowedWords.has(word.slice(0, -3) + 'y')) return true;
+      // Check for noun/verb -ing forms (e.g., plant -> planting)
+      if (word.endsWith('ing') && allowedWords.has(word.slice(0, -3))) return true;
+      // Check for -ic adjective forms (e.g., acid -> acidic)
+      if (word.endsWith('ic') && allowedWords.has(word.slice(0, -2))) return true;
+      return false;
+    }
+
+    function getPlainTextFromEditor() {
+      // Get plain text from the editor div
+      return editor.innerText || '';
+    }
+
+    function saveCaretPosition(context) {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return null;
+      const range = selection.getRangeAt(0);
+      const preSelectionRange = range.cloneRange();
+      preSelectionRange.selectNodeContents(context);
+      preSelectionRange.setEnd(range.startContainer, range.startOffset);
+      const start = preSelectionRange.toString().length;
+      return { start, end: start + range.toString().length };
+    }
+
+    function restoreCaretPosition(context, saved) {
+      if (!saved) return;
+      let charIndex = 0, range = document.createRange();
+      range.setStart(context, 0);
+      range.collapse(true);
+      let nodeStack = [context], node, foundStart = false, stop = false;
+      while (!stop && (node = nodeStack.pop())) {
+        if (node.nodeType === 3) {
+          const nextCharIndex = charIndex + node.length;
+          if (!foundStart && saved.start >= charIndex && saved.start <= nextCharIndex) {
+            range.setStart(node, saved.start - charIndex);
+            foundStart = true;
+          }
+          if (foundStart && saved.end >= charIndex && saved.end <= nextCharIndex) {
+            range.setEnd(node, saved.end - charIndex);
+            stop = true;
+          }
+          charIndex = nextCharIndex;
+        } else {
+          let i = node.childNodes.length;
+          while (i--) {
+            nodeStack.push(node.childNodes[i]);
+          }
+        }
+      }
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+
+    function updateEditorHighlight() {
+      // Only save/restore caret when focus is in the editor, so typing in
+      // the "Add your own words" input doesn't steal focus
+      const hadFocus = (document.activeElement === editor);
+      const saved = hadFocus ? saveCaretPosition(editor) : null;
+      const text = getPlainTextFromEditor();
+      // Split and highlight words
+      const html = text.replace(/\b([a-zA-Z']+)\b/g, (match, word) => {
+        const lowerWord = word.toLowerCase();
+        if (!isAllowed(lowerWord)) {
+          return `<span class=\"bad-word\">${match}</span>`;
+        }
+        return match;
+      }).replace(/\n/g, '<br>');
+      editor.innerHTML = html;
+      if (hadFocus && saved) {
+        restoreCaretPosition(editor, saved);
+      }
+    }
+
+    editor.addEventListener('input', updateEditorHighlight);
+    document.getElementById('scienceToggle').addEventListener('change', () => {
+      allowedWords = getAllowedWords();
+      updateEditorHighlight();
+    });
+    document.getElementById('userWords').addEventListener('input', () => {
+      allowedWords = getAllowedWords();
+      updateEditorHighlight();
+    });
+
+    // Initial highlight
+    updateEditorHighlight();
+  </script>
+</body>
+</html>

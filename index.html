@@ -2,328 +2,275 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Spoken in Plain Science</title>
+  <meta name="description" content="Spoken in Plain Science — a science communication tool by Erin Flowers, PhD.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🪐</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    #highlighted {
-      position: absolute;
-      top: 120px; /* Adjust as needed to match textarea position */
-      left: 0;
-      width: 100%;
-      height: 120px;
-      padding: 10px;
-      font-size: 1.1em;
-      font-family: inherit;
-      border: 1px solid #ccc;
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: inherit;
-      background: white;
-      pointer-events: none;
-      z-index: 1;
-      box-sizing: border-box;
-      overflow: auto;
+    :root{
+      --bg:#181511; --ink:#f0ece4; --muted:#a39c90; --faint:#756f64;
+      --hair:#322d26; --hair2:#272219; --accent:#44a08f; --gold:#d6b96e; --red:#d23b2e;
     }
-    textarea {
-      position: absolute;
-      top: 120px; /* Adjust as needed to match highlighted div */
-      left: 0;
-      width: 100%;
-      height: 120px;
-      font-size: 1.1em;
-      font-family: inherit;
-      border: 1px solid #ccc;
-      background: transparent;
-      color: black;
-      z-index: 2;
-      box-sizing: border-box;
-      resize: none;
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      background:var(--bg); color:var(--ink);
+      font-family:'IBM Plex Mono',ui-monospace,monospace;
+      min-height:100vh;
     }
-    #editor .bad-word {
-      color: red !important;
-      font-weight: bold;
-      text-decoration: underline;
-      text-decoration-color: red !important;
-      background: none !important;
+    ::selection{background:var(--ink);color:var(--bg)}
+    a{color:var(--gold);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;font-weight:500}
+    a:hover{filter:brightness(1.12)}
+
+    .wrap{max-width:980px;margin:0 auto;padding:48px 40px 64px}
+    .split{display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap}
+
+    /* ---- left rail ---- */
+    .rail{width:300px;flex:none}
+    .mark{display:block;margin-bottom:18px}
+    .mark .stroke{stroke:var(--ink)}
+    .title{font-size:20px;font-weight:600;letter-spacing:0.05em;line-height:1.3}
+    .subtitle{font-size:10px;letter-spacing:0.22em;color:var(--muted);margin-top:8px}
+    .lead{font-size:14px;line-height:1.65;color:var(--muted);margin:22px 0 0;text-wrap:pretty}
+    .red{color:var(--red);font-weight:600;text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--red)}
+
+    .block{margin-top:28px;border-top:1px solid var(--hair);padding-top:22px}
+    .eyebrow{font-size:10px;letter-spacing:0.26em;color:var(--faint);margin-bottom:18px}
+
+    .toggle{display:flex;align-items:flex-start;gap:11px;cursor:pointer;margin-bottom:20px}
+    .toggle input{width:16px;height:16px;margin-top:2px;accent-color:var(--accent);cursor:pointer;flex:none}
+    .toggle .t-main{font-size:13.5px;font-weight:500;color:var(--ink)}
+    .toggle .t-sub{display:block;font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+    .field-label{font-size:10px;letter-spacing:0.16em;color:var(--faint);margin-bottom:9px}
+    .field{width:100%;padding:10px 12px;font-size:12.5px;font-family:'IBM Plex Mono',ui-monospace,monospace;
+      color:#14171a;background:#fbfbfa;border:1px solid #d6d9dc;border-radius:6px;outline:none}
+
+    .key{margin-top:24px;border-top:1px solid var(--hair);padding-top:20px;display:flex;flex-direction:column;gap:12px}
+    .key-row{display:inline-flex;align-items:center;gap:9px;font-size:10px;letter-spacing:0.14em;color:var(--muted)}
+    .key-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);flex:none}
+    .key-red{color:var(--red);font-weight:600;text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--red)}
+
+    /* ---- right pane ---- */
+    .pane{flex:1;min-width:320px}
+    .pane-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
+      border-bottom:1px solid var(--hair);padding-bottom:14px;margin-bottom:18px}
+    .pane-head .lbl{font-size:10px;letter-spacing:0.26em;color:var(--faint)}
+    .stats{font-size:11px;letter-spacing:0.12em}
+    .stats .w{color:var(--accent)}
+    .stats .sep{color:var(--faint);margin:0 6px}
+    .stats .f{color:var(--red)}
+    .clear{font-size:10px;letter-spacing:0.18em;color:var(--faint);cursor:pointer;user-select:none;transition:color .2s ease;margin-left:18px}
+    .clear:hover{color:var(--ink)}
+
+    #editor{
+      min-height:440px;max-height:66vh;overflow:auto;
+      border:1px solid #d6d9dc;border-radius:8px;background:#fff;
+      padding:22px 24px;font-size:16px;line-height:1.9;
+      font-family:'IBM Plex Mono',ui-monospace,monospace;color:#14171a;
+      white-space:pre-wrap;word-break:break-word;
     }
-    body {
-      position: relative;
-      min-height: 300px;
-      background: url('science_writer_bg.png') no-repeat center center fixed;
-      background-size: cover;
-    }
-    h1 {
-      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
-    }
-    label {
-      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
-    }
-    .subheader {
-      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
-      font-size: 1.8em;
-      margin: 10px 0 5px 0;
-    }
-    .main-container {
-      background: rgba(255,255,255,0.9);
-      border-radius: 12px;
-      padding: 32px 24px 24px 24px;
-      max-width: 2000px;
-      width: 90%;
-      margin: 40px auto;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
-    }
-    #editor {
-      min-height: 120px;
-      border: 1px solid #ccc;
-      padding: 10px;
-      font-size: 1.1em;
-      font-family: Consolas, 'Liberation Mono', 'Courier New', monospace;
-      width: 100%;
-      box-sizing: border-box;
-      background: rgba(255,255,255);
-      border-radius: 6px;
-      margin-top: 8px;
-    }
-    .footer-bar {
-      position: fixed;
-      left: 0;
-      bottom: 0;
-      width: 100vw;
-      background: rgba(255,255,255,0.9);
-      color: #222;
-      text-align: center;
-      padding: 16px 0 12px 0;
-      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
-      font-size: 1em;
-      z-index: 100;
-      border-radius: 0;
-      box-shadow: none;
-    }
-    .user-words-container {
-      margin: 16px 0 8px 0;
-    }
-    .user-words-label {
-      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
-      font-size: 1em;
-      display: block;
-      margin-bottom: 4px;
-    }
-    .user-words-input {
-      width: 100%;
-      padding: 8px;
-      font-size: 1em;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-      font-family: Consolas, 'Liberation Mono', 'Courier New', monospace;
-    }
-    .about-container {
-      background: rgba(255,255,255,0.9);
-      font-family: 'Agrandir', 'Verdana', 'Trebuchet MS', Arial, Helvetica, sans-serif;
-      padding: 28px 24px 20px 24px;
-      margin: 32px auto 24px auto;
-      max-width: 2000px;
-      width: 90%;
-      box-sizing: border-box;
-      font-size: 1.1em;
-      border-radius: 12px;
-    }
-    .red-text {
-      color: red;
+    #editor:focus{outline:none;border-color:#b9bec3}
+    #editor:empty:before{content:attr(data-ph);color:#9a9ea2}
+    #editor::-webkit-scrollbar{width:8px}
+    #editor::-webkit-scrollbar-thumb{background:#cdd1d4;border-radius:4px}
+    #editor .bad-word{color:var(--red);font-weight:600;text-decoration:underline;text-decoration-color:var(--red);text-underline-offset:2px}
+    #editor .your-word{color:var(--accent);font-weight:600;text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:2px}
+
+    /* ---- about + footer ---- */
+    .about{max-width:680px;margin:64px auto 0;border-top:1px solid var(--hair);padding-top:30px}
+    .about h2{font-size:clamp(22px,3vw,30px);font-weight:600;line-height:1.12;letter-spacing:-0.01em;margin:0 0 24px;color:var(--ink)}
+    .about p{font-size:14.5px;line-height:1.85;color:var(--muted);margin:0 0 22px;text-wrap:pretty}
+    .about p:last-of-type{margin:0}
+    .footer{margin-top:40px;border-top:1px solid var(--hair2);padding-top:22px;
+      font-size:10px;letter-spacing:0.14em;line-height:1.9;color:var(--faint)}
+
+    @media (max-width:720px){
+      .wrap{padding:32px 20px 48px}
+      .split{flex-direction:column;gap:28px}
+      .rail{width:100%}
+      .pane{width:100%;min-width:0}
+      #editor{min-height:320px}
+      .about{margin-top:44px}
     }
   </style>
 </head>
 <body>
-  <div class="main-container">
-    <h1>Spoken in Plain Science 🔬</h1>
-    <label><input type="checkbox" id="scienceToggle" checked> Check for scientific words?</label>
-    <div class="user-words-container">
-      <label for="userWords" class="user-words-label">Add your own field's common words here:</label>
-      <input type="text" id="userWords" placeholder="e.g. quasar, exoplanet, photometry, microscopy, etc." class="user-words-input">
-    </div>
-    <div class="subheader">Write words here. If a word turns <span class="red-text"><u>red</u></span>, it is not allowed!</div>
-    <div id="editor" contenteditable="true" spellcheck="true"></div>
-  </div>
+  <div class="wrap">
+    <div class="split">
 
-  <div class="about-container">
-    <h1>What is Spoken in Plain Science?</h1>
-    <p>
-        Spoken in Plain Science is a science communication tool modeled after the XKCD webtool <a href="https://xkcd.com/simplewriter/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">"Simple Writer"</a>, 
-        which is based on their webcomic <a href="https://xkcd.com/1133/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">"Up Goer Five"</a> 
-        and their book <a href="https://blog.xkcd.com/2015/05/13/new-book-thing-explainer/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">"Thing Explainer"</a>.
-        The instructions for the Simple Writer are simple: write in the box, and if you use a word that is not in the top 1000(-ish) words commonly used in the English language, that word will turn red. This is to help simplify
-        scientific messages for non-scientific audiences. Spoken in Plain Science was created in response to feedback from graduate students and postdoctoral researchers who 
-        participated in the <a href="https://cst.princeton.edu/lab-tales-science-storytelling-workshop" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">
-        Lab Tales Science Storytelling Workshop</a> who liked the Simple Writer activity, but wanted an exercise that would help them communicate at a slightly higher level 
-        (e.g. to peers in their field but not necessarily their sub-field).
-    </p>
-    <p> Spoken in Plain Science checks a list of the <a href="https://www.ef.edu/english-resources/english-vocabulary/top-3000-words/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">3000 most commonly-used words in the English language</a>, 
-        plus a list of approximately 300 words used commonly in physics, chemistry, biology, and computer science writings as suggested by ChatGPT. If you want to use just the 
-        3000 most commonly-used words, simply don't check the box next to ''Check for scientific words?'' We can't capture all of the words that might be common to a scientific 
-        field, so Spoken in Plain Science also allows you to add your own words to the checker.
-    </p>
-    <p> Good science requires good communication, now more than ever. We hope that Spoken in Plain Science will help you to better communicate your incredible research to friends, 
-        family, your scientific peers, and the general public!
-    </p>
-  </div>
-  <div class="footer-bar">
-    Created by Erin Flowers, PhD, Assistant Director of STEM Education, <a href="https://cst.princeton.edu/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">Center on Science and Technology</a>, Princeton University
+      <!-- LEFT RAIL -->
+      <div class="rail">
+        <svg class="mark" width="58" viewBox="0 0 360 260" overflow="visible">
+          <defs><clipPath id="satF"><rect x="-300" y="130" width="960" height="640"></rect></clipPath></defs>
+          <g transform="rotate(-16 180 130)"><ellipse class="stroke" cx="180" cy="130" rx="168" ry="50" fill="none" stroke-width="2"></ellipse><ellipse class="stroke" cx="180" cy="130" rx="124" ry="37" fill="none" stroke-width="2"></ellipse></g>
+          <circle cx="180" cy="130" r="92" fill="#d5b96e" stroke="#a8893c" stroke-width="2"></circle>
+          <g transform="rotate(-16 180 130)" clip-path="url(#satF)"><ellipse class="stroke" cx="180" cy="130" rx="168" ry="50" fill="none" stroke-width="2"></ellipse><ellipse class="stroke" cx="180" cy="130" rx="124" ry="37" fill="none" stroke-width="2"></ellipse></g>
+        </svg>
+        <div class="title">SPOKEN IN<br>PLAIN SCIENCE</div>
+        <div class="subtitle">A SCIENCE COMMUNICATION TOOL</div>
+        <p class="lead">Write words here. If a word turns <span class="red">red</span>, it is not allowed!</p>
+
+        <div class="block">
+          <div class="eyebrow">OPTIONS</div>
+          <label class="toggle">
+            <input type="checkbox" id="scienceToggle" checked>
+            <span><span class="t-main">Check for scientific words?</span><span class="t-sub">~300 physics, chemistry, biology &amp; CS terms.</span></span>
+          </label>
+          <div class="field-label">ADD YOUR FIELD&rsquo;S WORDS</div>
+          <input type="text" id="userWords" class="field" placeholder="e.g. quasar, photometry, etc.">
+        </div>
+
+        <div class="key">
+          <span class="key-row"><span class="key-dot"></span>YOUR ADDED WORDS</span>
+          <span class="key-row"><span class="key-red">abc</span>FLAGGED — SIMPLIFY IT</span>
+        </div>
+      </div>
+
+      <!-- RIGHT PANE -->
+      <div class="pane">
+        <div class="pane-head">
+          <div class="lbl">YOUR TEXT</div>
+          <div style="display:flex;align-items:center">
+            <div class="stats"><span class="w"><span id="countWords">0</span> WORDS</span><span class="sep">·</span><span class="f"><span id="countFlagged">0</span> FLAGGED</span></div>
+            <div class="clear" id="clearBtn">CLEAR</div>
+          </div>
+        </div>
+        <div id="editor" contenteditable="true" spellcheck="true" data-ph="Start writing here…"></div>
+      </div>
+    </div>
+
+    <!-- ABOUT + FOOTER -->
+    <div class="about">
+      <h2>What is Spoken in Plain Science?</h2>
+      <p>Spoken in Plain Science is a science communication tool modeled after the XKCD webtool <a href="https://xkcd.com/simplewriter/" target="_blank" rel="noopener">&ldquo;Simple Writer&rdquo;</a>, which is based on their webcomic <a href="https://xkcd.com/1133/" target="_blank" rel="noopener">&ldquo;Up Goer Five&rdquo;</a> and their book <a href="https://blog.xkcd.com/2015/05/13/new-book-thing-explainer/" target="_blank" rel="noopener">&ldquo;Thing Explainer&rdquo;</a>. The instructions for the Simple Writer are simple: write in the box, and if you use a word that is not in the top 1000(-ish) words commonly used in the English language, that word will turn red. This is to help simplify scientific messages for non-scientific audiences. Spoken in Plain Science was created in response to feedback from graduate students and postdoctoral researchers who participated in the <a href="https://cst.princeton.edu/lab-tales-science-storytelling-workshop" target="_blank" rel="noopener">Lab Tales Science Storytelling Workshop</a> who liked the Simple Writer activity, but wanted an exercise that would help them communicate at a slightly higher level (e.g. to peers in their field but not necessarily their sub-field).</p>
+      <p>Spoken in Plain Science checks a list of the <a href="https://www.ef.edu/english-resources/english-vocabulary/top-3000-words/" target="_blank" rel="noopener">3000 most commonly-used words in the English language</a>, plus a list of approximately 300 words used commonly in physics, chemistry, biology, and computer science writings as suggested by ChatGPT. If you want to use just the 3000 most commonly-used words, simply don&rsquo;t check the box next to &ldquo;Check for scientific words?&rdquo; We can&rsquo;t capture all of the words that might be common to a scientific field, so Spoken in Plain Science also allows you to add your own words to the checker.</p>
+      <p>Good science requires good communication, now more than ever. We hope that Spoken in Plain Science will help you to better communicate your incredible research to friends, family, your scientific peers, and the general public!</p>
+
+      <div class="footer">CREATED BY ERIN FLOWERS, PHD &middot; ASSISTANT DIRECTOR OF STEM EDUCATION<br><a href="https://cst.princeton.edu/" target="_blank" rel="noopener">CENTER ON SCIENCE AND TECHNOLOGY</a>, PRINCETON UNIVERSITY</div>
+    </div>
   </div>
 
   <script src="common_words.js"></script>
   <script src="science_words.js"></script>
   <script>
-    // Parse and normalize the word lists to lowercase and trim
+    // ---- word lists (parsed from the external files, same as the original) ----
     const commonWords = typeof commonWordsList === 'string'
       ? commonWordsList.split('\n').map(w => w.trim().toLowerCase()).filter(Boolean)
       : (typeof commonWords !== 'undefined' ? commonWords : []);
-
     const scienceWords = typeof scienceWordsList === 'string'
       ? scienceWordsList.split('\n').map(w => w.trim().toLowerCase()).filter(Boolean)
       : (typeof scienceWords !== 'undefined' ? scienceWords : []);
 
-    // Function to get allowed words based on toggle
-    function getAllowedWords() {
-      const scienceChecked = document.getElementById('scienceToggle').checked;
-      const userWordsRaw = document.getElementById('userWords').value;
-      // Split user words by comma, space, or newline, trim, and lowercase
-      const userWords = userWordsRaw.split(/[,\s]+/).map(w => w.trim().toLowerCase()).filter(Boolean);
-      if (scienceChecked) {
-        return new Set([...commonWords, ...scienceWords, ...userWords]);
-      } else {
-        return new Set([...commonWords, ...userWords]);
-      }
+    const editor   = document.getElementById('editor');
+    const toggleEl  = document.getElementById('scienceToggle');
+    const userEl    = document.getElementById('userWords');
+    const cWords    = document.getElementById('countWords');
+    const cFlagged  = document.getElementById('countFlagged');
+
+    let allowedWords = new Set();
+    let userSet      = new Set();
+
+    function getUserWords(){
+      return userEl.value.split(/[,\s]+/).map(w => w.trim().toLowerCase()).filter(Boolean);
+    }
+    function recompute(){
+      const user = getUserWords();
+      userSet = new Set(user);
+      const base = toggleEl.checked ? [...commonWords, ...scienceWords, ...user] : [...commonWords, ...user];
+      allowedWords = new Set(base);
     }
 
-    let allowedWords = getAllowedWords();
-
-    // Debug output
-    console.log("Allowed words sample:", Array.from(allowedWords).slice(0, 10));
-    console.log("Allowed words count:", allowedWords.size);
-    if (allowedWords.size === 0) {
-      alert("No allowed words loaded! Please check your word list files.");
-    }
-
-    const editor = document.getElementById('editor');
-
-    // Irregular plurals: plural form -> singular (mouse->mice, foot->feet, etc.)
     const irregularPlurals = {
-      mice: 'mouse', lice: 'louse',                    // -ouse -> -ice
-      feet: 'foot', teeth: 'tooth', geese: 'goose',    // -oo- -> -ee-
-      men: 'man', women: 'woman',                      // -an -> -en
-      children: 'child', oxen: 'ox',                   // -en / -ren
-      people: 'person', dice: 'die'                    // other common irregulars
+      mice:'mouse', lice:'louse', feet:'foot', teeth:'tooth', geese:'goose',
+      men:'man', women:'woman', children:'child', oxen:'ox', people:'person', dice:'die'
     };
 
-    function isAllowed(word) {
-      if (allowedWords.has(word)) return true;
-      // Check for irregular verbs
-      if (typeof irregularVerbs !== 'undefined' && irregularVerbs[word] && allowedWords.has(irregularVerbs[word])) return true;
-      // Check for irregular plurals (e.g. mice->mouse, feet->foot)
-      if (irregularPlurals[word] && allowedWords.has(irregularPlurals[word])) return true;
-      // General rule for 'en' and 'n' endings (e.g., eaten -> eat, taken -> take)
-      if (word.endsWith('en') && allowedWords.has(word.slice(0, -2))) return true;
-      if (word.endsWith('n') && allowedWords.has(word.slice(0, -1))) return true;
-      // Check for simple plurals
-      if (word.endsWith('es') && allowedWords.has(word.slice(0, -2))) return true;
-      if (word.endsWith('s') && allowedWords.has(word.slice(0, -1))) return true;
-      // Check for y -> ies plural (e.g., baby -> babies)
-      if (word.endsWith('ies') && allowedWords.has(word.slice(0, -3) + 'y')) return true;
-      // Check for comparative and superlative adjectives
-      if (word.endsWith('er') && allowedWords.has(word.slice(0, -2))) return true;
-      if (word.endsWith('est') && allowedWords.has(word.slice(0, -3))) return true;
-      // Check for past tense verbs
-      if (word.endsWith('d') && allowedWords.has(word.slice(0, -1))) return true;
-      if (word.endsWith('ed') && allowedWords.has(word.slice(0, -2))) return true;
-      // Check for adverbs (e.g., narrow -> narrowly)
-      if (word.endsWith('ly') && allowedWords.has(word.slice(0, -2))) return true;
-      // Check for y -> ily adverbs (e.g., happy -> happily)
-      if (word.endsWith('ily') && allowedWords.has(word.slice(0, -3) + 'y')) return true;
-      // Check for noun/verb -ing forms (e.g., plant -> planting)
-      if (word.endsWith('ing') && allowedWords.has(word.slice(0, -3))) return true;
-      // Check for -ic adjective forms (e.g., acid -> acidic)
-      if (word.endsWith('ic') && allowedWords.has(word.slice(0, -2))) return true;
+    // generic morphology match against a given Set
+    function matches(A, word){
+      if (!A) return false;
+      if (A.has(word)) return true;
+      if (typeof irregularVerbs !== 'undefined' && irregularVerbs[word] && A.has(irregularVerbs[word])) return true;
+      if (irregularPlurals[word] && A.has(irregularPlurals[word])) return true;
+      if (word.endsWith('en')  && A.has(word.slice(0,-2))) return true;
+      if (word.endsWith('n')   && A.has(word.slice(0,-1))) return true;
+      if (word.endsWith('es')  && A.has(word.slice(0,-2))) return true;
+      if (word.endsWith('s')   && A.has(word.slice(0,-1))) return true;
+      if (word.endsWith('ies') && A.has(word.slice(0,-3) + 'y')) return true;
+      if (word.endsWith('er')  && A.has(word.slice(0,-2))) return true;
+      if (word.endsWith('est') && A.has(word.slice(0,-3))) return true;
+      if (word.endsWith('d')   && A.has(word.slice(0,-1))) return true;
+      if (word.endsWith('ed')  && A.has(word.slice(0,-2))) return true;
+      if (word.endsWith('ly')  && A.has(word.slice(0,-2))) return true;
+      if (word.endsWith('ily') && A.has(word.slice(0,-3) + 'y')) return true;
+      if (word.endsWith('ing') && A.has(word.slice(0,-3))) return true;
+      if (word.endsWith('ic')  && A.has(word.slice(0,-2))) return true;
       return false;
     }
+    function isAllowed(word){ return matches(allowedWords, word); }
 
-    function getPlainTextFromEditor() {
-      // Get plain text from the editor div
-      return editor.innerText || '';
-    }
-
-    function saveCaretPosition(context) {
-      const selection = window.getSelection();
-      if (!selection.rangeCount) return null;
-      const range = selection.getRangeAt(0);
-      const preSelectionRange = range.cloneRange();
-      preSelectionRange.selectNodeContents(context);
-      preSelectionRange.setEnd(range.startContainer, range.startOffset);
-      const start = preSelectionRange.toString().length;
+    // ---- caret save / restore across innerHTML rewrites ----
+    function saveCaret(ctx){
+      const sel = window.getSelection();
+      if (!sel.rangeCount) return null;
+      const range = sel.getRangeAt(0);
+      const pre = range.cloneRange();
+      pre.selectNodeContents(ctx);
+      pre.setEnd(range.startContainer, range.startOffset);
+      const start = pre.toString().length;
       return { start, end: start + range.toString().length };
     }
-
-    function restoreCaretPosition(context, saved) {
+    function restoreCaret(ctx, saved){
       if (!saved) return;
-      let charIndex = 0, range = document.createRange();
-      range.setStart(context, 0);
-      range.collapse(true);
-      let nodeStack = [context], node, foundStart = false, stop = false;
-      while (!stop && (node = nodeStack.pop())) {
-        if (node.nodeType === 3) {
-          const nextCharIndex = charIndex + node.length;
-          if (!foundStart && saved.start >= charIndex && saved.start <= nextCharIndex) {
-            range.setStart(node, saved.start - charIndex);
-            foundStart = true;
-          }
-          if (foundStart && saved.end >= charIndex && saved.end <= nextCharIndex) {
-            range.setEnd(node, saved.end - charIndex);
-            stop = true;
-          }
-          charIndex = nextCharIndex;
+      let charIndex = 0;
+      const range = document.createRange();
+      range.setStart(ctx, 0); range.collapse(true);
+      const stack = [ctx]; let node, foundStart = false, stop = false;
+      while (!stop && (node = stack.pop())){
+        if (node.nodeType === 3){
+          const next = charIndex + node.length;
+          if (!foundStart && saved.start >= charIndex && saved.start <= next){ range.setStart(node, saved.start - charIndex); foundStart = true; }
+          if (foundStart && saved.end >= charIndex && saved.end <= next){ range.setEnd(node, saved.end - charIndex); stop = true; }
+          charIndex = next;
         } else {
           let i = node.childNodes.length;
-          while (i--) {
-            nodeStack.push(node.childNodes[i]);
-          }
+          while (i--) stack.push(node.childNodes[i]);
         }
       }
       const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
+      sel.removeAllRanges(); sel.addRange(range);
     }
 
-    function updateEditorHighlight() {
-      // Only save/restore caret when focus is in the editor, so typing in
-      // the "Add your own words" input doesn't steal focus
-      const hadFocus = (document.activeElement === editor);
-      const saved = hadFocus ? saveCaretPosition(editor) : null;
-      const text = getPlainTextFromEditor();
-      // Split and highlight words
-      const html = text.replace(/\b([a-zA-Z']+)\b/g, (match, word) => {
-        const lowerWord = word.toLowerCase();
-        if (!isAllowed(lowerWord)) {
-          return `<span class=\"bad-word\">${match}</span>`;
-        }
+    function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function updateEditor(){
+      const had = (document.activeElement === editor);
+      const saved = had ? saveCaret(editor) : null;
+      const text = editor.innerText || '';
+      let words = 0, flagged = 0;
+      const html = escapeHtml(text).replace(/\b([a-zA-Z']+)\b/g, (match, word) => {
+        words++;
+        const lw = word.toLowerCase();
+        if (userSet.size && matches(userSet, lw)) return '<span class="your-word">' + match + '</span>';
+        if (!isAllowed(lw)){ flagged++; return '<span class="bad-word">' + match + '</span>'; }
         return match;
       }).replace(/\n/g, '<br>');
       editor.innerHTML = html;
-      if (hadFocus && saved) {
-        restoreCaretPosition(editor, saved);
-      }
+      if (had && saved) restoreCaret(editor, saved);
+      cWords.textContent = words;
+      cFlagged.textContent = flagged;
     }
 
-    editor.addEventListener('input', updateEditorHighlight);
-    document.getElementById('scienceToggle').addEventListener('change', () => {
-      allowedWords = getAllowedWords();
-      updateEditorHighlight();
-    });
-    document.getElementById('userWords').addEventListener('input', () => {
-      allowedWords = getAllowedWords();
-      updateEditorHighlight();
-    });
+    editor.addEventListener('input', updateEditor);
+    toggleEl.addEventListener('change', () => { recompute(); updateEditor(); });
+    userEl.addEventListener('input',  () => { recompute(); updateEditor(); });
+    document.getElementById('clearBtn').addEventListener('click', () => { editor.innerHTML = ''; updateEditor(); editor.focus(); });
 
-    // Initial highlight
-    updateEditorHighlight();
+    recompute();
+    updateEditor();
   </script>
 </body>
 </html>
